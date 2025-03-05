@@ -1,38 +1,78 @@
 package org.kuroneko.starpivot.services;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.IOUtils;
+import org.kuroneko.starpivot.entity.file.FileDetail;
+import org.kuroneko.starpivot.entity.hadoop.File;
+import org.kuroneko.starpivot.entity.hadoop.FileSystemItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * HDFS客户端服务类，用于与Hadoop文件系统进行交互。
+ */
 @Service
 public class HdfsClientService {
-    URI uri = new URI("hdfs://hadoop102:9000/");
-    Configuration configuration = new Configuration();
-    String user = "root";
-    FileSystem fs = FileSystem.get(uri, configuration, user);
+    private static final Logger log = LoggerFactory.getLogger(HdfsClientService.class);
 
+    // Hadoop文件系统的URI
+    private final URI uri = new URI("hdfs://hadoop102:9000/");
+
+    // Hadoop配置
+    private final Configuration configuration = new Configuration();
+
+    // Hadoop文件系统用户
+    private final String user = "root";
+
+    // Hadoop文件系统实例
+    private final FileSystem fs = FileSystem.get(uri, configuration, user);
+
+    /**
+     * HdfsClientService构造函数。
+     *
+     * @throws IOException          如果发生I/O错误。
+     * @throws InterruptedException 如果当前线程被中断。
+     * @throws URISyntaxException   如果URI语法不正确。
+     */
     public HdfsClientService()
             throws IOException, InterruptedException, URISyntaxException {
-
     }
 
+    /**
+     * 在HDFS中创建目录。
+     *
+     * @param path 目录路径。
+     * @return 如果目录创建成功，则返回true，否则返回false。
+     * @throws IOException          如果发生I/O错误。
+     * @throws URISyntaxException   如果URI语法不正确。
+     * @throws InterruptedException 如果当前线程被中断。
+     */
     public boolean createDirectory(String path)
             throws IOException, URISyntaxException, InterruptedException {
         return fs.mkdirs(new Path(path));
     }
 
+    /**
+     * 删除HDFS中的目录。
+     *
+     * @param path 目录路径。
+     * @return 如果目录删除成功，则返回true，否则返回false。
+     * @throws IOException          如果发生I/O错误。
+     * @throws URISyntaxException   如果URI语法不正确。
+     * @throws InterruptedException 如果当前线程被中断。
+     */
     public boolean deleteDirectory(String path)
             throws IOException, URISyntaxException, InterruptedException {
-
         FileStatus status = fs.getFileStatus(new Path(path));
         if (status.isDirectory()) {
             return fs.delete(new Path(path), true);
@@ -40,10 +80,27 @@ public class HdfsClientService {
         return false;
     }
 
-    public boolean isFileExist(String path) throws IOException {
+    /**
+     * 检查HDFS中是否存在文件。
+     *
+     * @param path 文件路径。
+     * @return 如果文件存在，则返回true，否则返回false。
+     * @throws IOException 如果发生I/O错误。
+     */
+    public boolean isFileExist(String path)
+            throws IOException {
         return fs.exists(new Path(path));
     }
 
+    /**
+     * 删除HDFS中的文件。
+     *
+     * @param path 文件路径。
+     * @return 如果文件删除成功，则返回true，否则返回false。
+     * @throws IOException          如果发生I/O错误。
+     * @throws URISyntaxException   如果URI语法不正确。
+     * @throws InterruptedException 如果当前线程被中断。
+     */
     public boolean deleteFile(String path)
             throws IOException, URISyntaxException, InterruptedException {
         FileStatus status = fs.getFileStatus(new Path(path));
@@ -53,14 +110,14 @@ public class HdfsClientService {
         return false;
     }
 
-//    public boolean uploadFile() {
-//        fs.copyFromLocalFile();
-//        return false;
-//    }
-
-    public boolean createFile() throws IOException {
-        // TODO 参数没写
-        // 创建文件
+    /**
+     * 在HDFS中创建文件。
+     *
+     * @return 如果文件创建成功，则返回true，否则返回false。
+     * @throws IOException 如果发生I/O错误。
+     */
+    public boolean createFile()
+            throws IOException {
         Path filePath = new Path("/test.txt");
         boolean isExist = fs.exists(filePath);
         if (isExist) {
@@ -70,11 +127,114 @@ public class HdfsClientService {
         return true;
     }
 
-    public boolean updateFileContent(InputStream fileInputStream) throws IOException {
-        //TODO 未完成 没法选择url
+    /**
+     * 更新HDFS中文件的内容。
+     *
+     * @param fileInputStream 文件内容的输入流。
+     * @return 如果文件内容更新成功，则返回true，否则返回false。
+     * @throws IOException 如果发生I/O错误。
+     */
+    public boolean updateFileContent(InputStream fileInputStream)
+            throws IOException {
         Path filePath = new Path("/test.txt");
         FSDataOutputStream fsDataOutputStream = fs.create(filePath, true);
         IOUtils.copyBytes(fileInputStream, fsDataOutputStream, configuration);
         return true;
     }
+
+    /**
+     * 获取指定目录中的文件列表。
+     *
+     * @param path 目录路径。
+     * @return 目录中的文件列表。
+     * @throws IOException 如果发生I/O错误。
+     */
+    public List<File> getFileSystemItemCurrentPath(String path)
+            throws IOException, URISyntaxException {
+        Path currentPath = new Path(path);
+        RemoteIterator<LocatedFileStatus> locatedFileStatusRemoteIterator = fs.listLocatedStatus(currentPath);
+        List<File> files = new ArrayList<>();
+        while (locatedFileStatusRemoteIterator.hasNext()) {
+            LocatedFileStatus next = locatedFileStatusRemoteIterator.next();
+            FileSystemItem fileSystemItem = new FileSystemItem(next);
+            files.add(new File(fileSystemItem));
+        }
+        return files;
+    }
+
+    /**
+     * 获取文件内容。
+     *
+     * @param path 文件路径。
+     * @return 文件内容详情。
+     * @throws IOException 如果发生I/O错误。
+     */
+//    public FileDetail getFileContent(String path)
+//            throws IOException {
+//        return new FileDetail();
+//    }
+
+    /**
+     * 获取HDFS中文件的输入流。
+     *
+     * @param pathInHdfs HDFS中文件的路径。
+     * @return 文件的输入流。
+     * @throws IOException 如果发生I/O错误。
+     */
+    public FSDataInputStream getFSDataInputStream(String pathInHdfs)
+            throws IOException {
+        Path path = getPath(pathInHdfs);
+        return fs.open(path);
+    }
+
+    /**
+     * 获取Hadoop文件系统实例。
+     *
+     * @return Hadoop文件系统实例。
+     */
+    public FileSystem getFileSystem() {
+        return fs;
+    }
+
+    /**
+     * 获取HDFS中文件的状态。
+     *
+     * @param pathInHdfs HDFS中文件的路径。
+     * @return 文件状态。
+     * @throws IOException 如果发生I/O错误。
+     */
+    public FileStatus getFileStatus(String pathInHdfs)
+            throws IOException {
+        Path path = getPath(pathInHdfs);
+        return fs.getFileStatus(path);
+    }
+
+    /**
+     * 将字符串路径转换为Hadoop Path对象。
+     *
+     * @param pathInHdfs HDFS中文件的路径。
+     * @return Hadoop Path对象。
+     */
+    public Path getPath(String pathInHdfs) {
+        return new Path(uri.resolve(pathInHdfs));
+    }
+
+    /**
+     * 获取文件的前32kb
+     * @param pathInHdfs HDFS中文件的路径。
+     * @return 文件前32kb String
+     */
+    public String getFileHead(String pathInHdfs)
+            throws IOException {
+        FSDataInputStream fsDataInputStream = getFSDataInputStream(pathInHdfs);
+        int bufferSize = 32768;
+        byte[] buffer = new byte[bufferSize];
+        int bytesRead = fsDataInputStream.read(buffer, 0, bufferSize);
+        String result = "";
+        if (bytesRead > 0) {
+            result = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
+        }
+        return result;
+    }
+
 }
