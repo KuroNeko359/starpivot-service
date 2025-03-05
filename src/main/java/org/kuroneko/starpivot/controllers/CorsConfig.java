@@ -5,17 +5,13 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * CorsConfig 是一个 Spring 配置类，用于配置跨域资源共享（CORS）策略。
- * 跨域资源共享是一种允许浏览器在跨域请求时访问资源的机制，该配置类确保前端应用能够与后端服务进行跨域通信。
- * 通过此配置，我们可以精确控制哪些域名、请求方法、请求头以及认证信息可以被允许跨域访问后端接口，增强系统的安全性和兼容性。
+ * 一个 Spring 配置类，用于配置CORS策略。
  */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
     /**
      * 重写 WebMvcConfigurer 接口的 addCorsMappings 方法，用于配置跨域映射规则。
-     * 该方法定义了哪些路径可以进行跨域请求，以及针对这些请求的详细 CORS 策略。
-     *
      * @param registry 用于注册跨域映射规则的 CorsRegistry 对象。
      */
     @Override
