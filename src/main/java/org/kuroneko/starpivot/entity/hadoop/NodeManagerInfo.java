@@ -5,91 +5,142 @@ import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.util.List;
 
+/**
+ * 表示Hadoop NodeManager信息的实体类
+ * 用于封装YARN集群中NodeManager的状态和资源使用情况
+ */
 public class NodeManagerInfo {
+    // 使用Jackson注解映射JSON字段"nodes"到该属性
     @JsonProperty("nodes")
     public Nodes nodes;
 
+    /**
+     * 获取节点信息对象
+     *
+     * @return 包含节点列表的Nodes对象
+     */
     public Nodes getNodes() {
         return nodes;
     }
 
+    /**
+     * 设置节点信息对象
+     *
+     * @param nodes 包含节点列表的Nodes对象
+     */
     public void setNodes(Nodes nodes) {
         this.nodes = nodes;
     }
 
+    /**
+     * 表示NodeManager的节点集合
+     * 包含多个节点的详细信息
+     */
     public static class Nodes {
+        // 使用Jackson注解映射JSON字段"node"到该属性
         @JsonProperty("node")
         public List<NodeInfo> nodeList;
 
+        /**
+         * 获取节点信息列表
+         *
+         * @return NodeInfo对象列表
+         */
         public List<NodeInfo> getNodeList() {
             return nodeList;
         }
 
+        /**
+         * 设置节点信息列表
+         *
+         * @param nodeList NodeInfo对象列表
+         */
         public void setNodeList(List<NodeInfo> nodeList) {
             this.nodeList = nodeList;
         }
 
+        /**
+         * 表示单个NodeManager节点的信息
+         * 包含节点状态、资源使用情况等详细信息
+         */
         public static class NodeInfo {
+            // 节点的机架位置
             @JsonProperty("rack")
             public String rack;
 
+            // 节点状态（如RUNNING, DECOMMISSIONED等）
             @JsonProperty("state")
             public String state;
 
+            // 节点主机名
             @JsonProperty("nodeHostName")
             public String nodeHostName;
 
+            // 节点的HTTP访问地址
             @JsonProperty("nodeHTTPAddress")
             public String nodeHTTPAddress;
 
+            // 最后健康更新时间（毫秒时间戳）
             @JsonProperty("lastHealthUpdate")
             public long lastHealthUpdate;
 
+            // 节点运行的软件版本
             @JsonProperty("version")
             public String version;
 
+            // 健康报告描述
             @JsonProperty("healthReport")
             public String healthReport;
 
+            // 当前运行的容器数量
             @JsonProperty("numContainers")
             public int numContainers;
 
+            // 已使用内存（MB）
             @JsonProperty("usedMemoryMB")
             public long usedMemoryMB;
 
+            // 可用内存（MB）
             @JsonProperty("availMemoryMB")
             public long availMemoryMB;
 
+            // 已使用虚拟核心数
             @JsonProperty("usedVirtualCores")
             public long usedVirtualCores;
 
+            // 可用虚拟核心数
             @JsonProperty("availableVirtualCores")
             public long availableVirtualCores;
 
+            // 运行中的机会容器数量
             @JsonProperty("numRunningOpportContainers")
             public int numRunningOpportContainers;
 
+            // 机会容器使用的内存（GB）
             @JsonProperty("usedMemoryOpportGB")
             public long usedMemoryOpportGB;
 
+            // 机会容器使用的虚拟核心数
             @JsonProperty("usedVirtualCoresOpport")
             public long usedVirtualCoresOpport;
 
+            // 排队中的容器数量
             @JsonProperty("numQueuedContainers")
             public int numQueuedContainers;
 
-//            @JsonProperty("allocationTags")
-//            public AllocationTags allocationTags;
-
+            // 资源利用率信息
             @JsonProperty("resourceUtilization")
             public ResourceUtilization resourceUtilization;
 
+            // 已使用资源信息
             @JsonProperty("usedResource")
             public Resource usedResource;
 
+            // 可用资源信息
             @JsonProperty("availableResource")
             public Resource availableResource;
 
+            // Getter和Setter方法
             public String getRack() {
                 return rack;
             }
@@ -218,14 +269,6 @@ public class NodeManagerInfo {
                 this.numQueuedContainers = numQueuedContainers;
             }
 
-//            public AllocationTags getAllocationTags() {
-//                return allocationTags;
-//            }
-//
-//            public void setAllocationTags(AllocationTags allocationTags) {
-//                this.allocationTags = allocationTags;
-//            }
-
             public ResourceUtilization getResourceUtilization() {
                 return resourceUtilization;
             }
@@ -250,26 +293,31 @@ public class NodeManagerInfo {
                 this.availableResource = availableResource;
             }
 
-//            public static class AllocationTags {
-//                //Allocation Tags
-//            }
-
+            /**
+             * 表示节点的资源利用率详细信息
+             */
             public static class ResourceUtilization {
+                // 节点物理内存使用量（MB）
                 @JsonProperty("nodePhysicalMemoryMB")
                 public long nodePhysicalMemoryMB;
 
+                // 节点虚拟内存使用量（MB）
                 @JsonProperty("nodeVirtualMemoryMB")
                 public long nodeVirtualMemoryMB;
 
+                // 节点CPU使用率（百分比）
                 @JsonProperty("nodeCPUUsage")
                 public double nodeCPUUsage;
 
+                // 容器聚合物理内存使用量（MB）
                 @JsonProperty("aggregatedContainersPhysicalMemoryMB")
                 public long aggregatedContainersPhysicalMemoryMB;
 
+                // 容器聚合虚拟内存使用量（MB）
                 @JsonProperty("aggregatedContainersVirtualMemoryMB")
                 public long aggregatedContainersVirtualMemoryMB;
 
+                // 容器CPU使用率（百分比）
                 @JsonProperty("containersCPUUsage")
                 public double containersCPUUsage;
 
@@ -322,13 +370,19 @@ public class NodeManagerInfo {
                 }
             }
 
+            /**
+             * 表示资源信息（已使用或可用）
+             */
             public static class Resource {
+                // 内存量（单位由上下文决定）
                 @JsonProperty("memory")
                 public long memory;
 
+                // 虚拟核心数
                 @JsonProperty("vCores")
                 public long vCores;
 
+                // 附加资源信息
                 @JsonProperty("resourceInformations")
                 public ResourceInformations resourceInformations;
 
@@ -356,7 +410,11 @@ public class NodeManagerInfo {
                     this.resourceInformations = resourceInformations;
                 }
 
+                /**
+                 * 表示资源信息的集合
+                 */
                 public static class ResourceInformations {
+                    // 资源信息列表
                     @JsonProperty("resourceInformation")
                     public List<ResourceInformation> resourceInformation;
 
@@ -368,22 +426,31 @@ public class NodeManagerInfo {
                         this.resourceInformation = resourceInformation;
                     }
 
+                    /**
+                     * 表示单个资源条目
+                     */
                     public static class ResourceInformation {
+                        // 最大分配量
                         @JsonProperty("maximumAllocation")
                         public long maximumAllocation;
 
+                        // 最小分配量
                         @JsonProperty("minimumAllocation")
                         public long minimumAllocation;
 
+                        // 资源名称
                         @JsonProperty("name")
                         public String name;
 
+                        // 资源类型
                         @JsonProperty("resourceType")
                         public String resourceType;
 
+                        // 单位
                         @JsonProperty("units")
                         public String units;
 
+                        // 当前值
                         @JsonProperty("value")
                         public long value;
 
@@ -437,8 +504,6 @@ public class NodeManagerInfo {
                     }
                 }
             }
-
-
         }
     }
 }

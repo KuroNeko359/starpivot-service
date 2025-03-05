@@ -1,210 +1,234 @@
 package org.kuroneko.starpivot.entity.hadoop;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
 /**
- * Represents the information of a Hadoop cluster.
+ * 表示Hadoop集群信息的实体类
+ * 用于封装从Hadoop JMX接口获取的集群状态和统计信息
  */
 public class HadoopInfo {
+    // 使用Jackson注解映射JSON字段"beans"到该属性
     @JsonProperty("beans")
     private List<Bean> beans;
 
     /**
-     * Gets the list of beans.
+     * 获取Hadoop集群的Bean列表
+     * 每个Bean包含特定的集群信息
      *
-     * @return the list of beans
+     * @return Bean对象列表
      */
     public List<Bean> getBeans() {
         return beans;
     }
 
     /**
-     * Sets the list of beans.
+     * 设置Hadoop集群的Bean列表
      *
-     * @param beans the list of beans
+     * @param beans 要设置的Bean对象列表
      */
     public void setBeans(List<Bean> beans) {
         this.beans = beans;
     }
 
     /**
-     * Represents a bean containing detailed information about the Hadoop cluster.
+     * 表示Hadoop集群的单个信息单元（Bean）
+     * 包含集群的详细状态和统计信息
      */
     public static class Bean {
+        // Bean的名称，通常是JMX的MBean名称
         @JsonProperty("name")
         private String name;
 
+        // Bean的模型类型，描述其数据结构
         @JsonProperty("modelerType")
         private String modelerType;
 
+        // 集群总存储容量（字节）
         @JsonProperty("Total")
         private long total;
 
+        // 是否完成升级最终化
         @JsonProperty("UpgradeFinalized")
         private boolean upgradeFinalized;
 
+        // 数据块池ID
         @JsonProperty("BlockPoolId")
         private String blockPoolId;
 
+        // 集群唯一标识符
         @JsonProperty("ClusterId")
         private String clusterId;
 
+        // 高优先级低冗余复制块数量
         @JsonProperty("HighestPriorityLowRedundancyReplicatedBlocks")
         private int highestPriorityLowRedundancyReplicatedBlocks;
 
+        // 高优先级低冗余纠删码块数量
         @JsonProperty("HighestPriorityLowRedundancyECBlocks")
         private int highestPriorityLowRedundancyECBlocks;
 
+        // Hadoop版本号
         @JsonProperty("Version")
         private String version;
 
+        // 已使用存储空间（字节）
         @JsonProperty("Used")
         private long used;
 
+        // 可用存储空间（字节）
         @JsonProperty("Free")
         private long free;
 
+        // 提供的存储容量（字节）
         @JsonProperty("ProvidedCapacity")
         private long providedCapacity;
 
+        // 安全模式状态
         @JsonProperty("Safemode")
         private String safemode;
 
+        // 非DFS使用的空间（字节）
         @JsonProperty("NonDfsUsedSpace")
         private long nonDfsUsedSpace;
 
+        // 已使用空间百分比
         @JsonProperty("PercentUsed")
         private double percentUsed;
 
+        // 数据块池已使用空间（字节）
         @JsonProperty("BlockPoolUsedSpace")
         private long blockPoolUsedSpace;
 
+        // 数据块池使用百分比
         @JsonProperty("PercentBlockPoolUsed")
         private double percentBlockPoolUsed;
 
+        // 剩余空间百分比
         @JsonProperty("PercentRemaining")
         private double percentRemaining;
 
+        // 缓存总容量（字节）
         @JsonProperty("CacheCapacity")
         private long cacheCapacity;
 
+        // 已使用缓存空间（字节）
         @JsonProperty("CacheUsed")
         private long cacheUsed;
 
+        // 数据块总数
         @JsonProperty("TotalBlocks")
         private int totalBlocks;
 
+        // 丢失的数据块数量
         @JsonProperty("NumberOfMissingBlocks")
         private int numberOfMissingBlocks;
 
+        // 复制因子为1的丢失块数量
         @JsonProperty("NumberOfMissingBlocksWithReplicationFactorOne")
         private int numberOfMissingBlocksWithReplicationFactorOne;
 
+        // 活动节点信息（JSON字符串）
         @JsonProperty("LiveNodes")
         private String liveNodes;
 
+        // 死亡节点信息（JSON字符串）
         @JsonProperty("DeadNodes")
         private String deadNodes;
 
+        // 退役节点信息（JSON字符串）
         @JsonProperty("DecomNodes")
         private String decomNodes;
 
+        // 进入维护模式的节点信息（JSON字符串）
         @JsonProperty("EnteringMaintenanceNodes")
         private String enteringMaintenanceNodes;
 
+        // 名称目录状态信息（JSON字符串）
         @JsonProperty("NameDirStatuses")
         private String nameDirStatuses;
 
+        // 节点使用情况信息（JSON字符串）
         @JsonProperty("NodeUsage")
         private String nodeUsage;
 
+        // 名称日志状态信息（JSON字符串）
         @JsonProperty("NameJournalStatus")
         private String nameJournalStatus;
 
+        // 日志事务信息（JSON字符串）
         @JsonProperty("JournalTransactionInfo")
         private String journalTransactionInfo;
 
+        // NameNode启动时间（毫秒）
         @JsonProperty("NnStartedTimeInMillis")
         private long nnStartedTimeInMillis;
 
+        // 编译信息
         @JsonProperty("CompileInfo")
         private String compileInfo;
 
+        // 损坏文件列表（JSON字符串）
         @JsonProperty("CorruptFiles")
         private String corruptFiles;
 
+        // 可快照目录数量
         @JsonProperty("NumberOfSnapshottableDirs")
         private int numberOfSnapshottableDirs;
 
+        // 不同版本数量
         @JsonProperty("DistinctVersionCount")
         private int distinctVersionCount;
 
+        // 不同版本列表
         @JsonProperty("DistinctVersions")
         private List<DistinctVersion> distinctVersions;
 
+        // 软件版本号
         @JsonProperty("SoftwareVersion")
         private String softwareVersion;
 
+        // 名称目录大小信息（JSON字符串）
         @JsonProperty("NameDirSize")
         private String nameDirSize;
 
+        // 滚动升级状态
         @JsonProperty("RollingUpgradeStatus")
         private Object rollingUpgradeStatus;
 
+        // 当前线程数
         @JsonProperty("Threads")
         private int threads;
 
-        // Getters and Setters for all fields
-        // ...
-
         /**
-         * Represents a distinct version of the Hadoop cluster.
+         * 表示Hadoop集群的特定版本信息
          */
         public static class DistinctVersion {
+            // 版本键（通常是版本号）
             private String key;
+            // 该版本的计数
             private int value;
 
-            /**
-             * Gets the key of the distinct version.
-             *
-             * @return the key of the distinct version
-             */
             public String getKey() {
                 return key;
             }
 
-            /**
-             * Sets the key of the distinct version.
-             *
-             * @param key the key of the distinct version
-             */
             public void setKey(String key) {
                 this.key = key;
             }
 
-            /**
-             * Gets the value of the distinct version.
-             *
-             * @return the value of the distinct version
-             */
             public int getValue() {
                 return value;
             }
 
-            /**
-             * Sets the value of the distinct version.
-             *
-             * @param value the value of the distinct version
-             */
             public void setValue(int value) {
                 this.value = value;
             }
         }
 
-        // Getters and setters for Bean class fields
+        // Getter和Setter方法
+        // 每个方法的作用通过字段注释已明确，这里仅保留签名
 
         public String getName() {
             return name;
@@ -534,6 +558,12 @@ public class HadoopInfo {
             this.threads = threads;
         }
 
+        /**
+         * 返回Bean对象的字符串表示形式
+         * 包含所有属性值的详细描述
+         *
+         * @return Bean的字符串表示
+         */
         @Override
         public String toString() {
             return "Bean{" +
@@ -582,6 +612,11 @@ public class HadoopInfo {
         }
     }
 
+    /**
+     * 返回HadoopInfo对象的字符串表示形式
+     *
+     * @return 包含beans列表的字符串表示
+     */
     @Override
     public String toString() {
         return "HadoopInfo{" +
