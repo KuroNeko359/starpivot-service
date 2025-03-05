@@ -6,28 +6,71 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 表示文件系统中的文件或目录的实体类
+ * 实现了Serializable接口以支持序列化
+ */
 public class File implements Serializable {
+    // 文件或目录的路径
     private String path;
+    // 是否为目录的标志
     private boolean isDirectory;
+    // 文件大小（字节数）
     private long length;
+    // 文件副本数
     private int replication;
+    // 数据块大小
     private long blocksize;
+    // 最后修改时间（时间戳）
     private long modificationTime;
+    // 最后访问时间（时间戳）
     private long accessTime;
+    // 文件所有者
     private String owner;
+    // 文件所属组
     private String group;
+    // 文件权限字符串（如"rwxr-xr-x"）
     private String permission;
+    // 是否为符号链接的标志
     private boolean isSymlink;
+    // 是否具有访问控制列表（ACL）的标志
     private boolean hasAcl;
+    // 是否加密的标志
     private boolean isEncrypted;
+    // 是否使用纠删码存储的标志
     private boolean isErasureCoded;
+    // 子文件/目录列表
     private List<File> children;
 
+    /**
+     * 默认构造函数
+     * 初始化空的子文件列表
+     */
     public File() {
         this.children = new ArrayList<>();
     }
 
-    public File(String path, boolean isDirectory, long length, int replication, long blocksize, long modificationTime, long accessTime, String owner, String group, String permission, boolean isSymlink, boolean hasAcl, boolean isEncrypted, boolean isErasureCoded) {
+    /**
+     * 带所有参数的构造函数
+     *
+     * @param path             文件路径
+     * @param isDirectory      是否为目录
+     * @param length           文件大小
+     * @param replication      副本数
+     * @param blocksize        块大小
+     * @param modificationTime 修改时间
+     * @param accessTime       访问时间
+     * @param owner            所有者
+     * @param group            所属组
+     * @param permission       权限
+     * @param isSymlink        是否符号链接
+     * @param hasAcl           是否有ACL
+     * @param isEncrypted      是否加密
+     * @param isErasureCoded   是否纠删码存储
+     */
+    public File(String path, boolean isDirectory, long length, int replication, long blocksize,
+                long modificationTime, long accessTime, String owner, String group, String permission,
+                boolean isSymlink, boolean hasAcl, boolean isEncrypted, boolean isErasureCoded) {
         this.path = path;
         this.isDirectory = isDirectory;
         this.length = length;
@@ -45,6 +88,8 @@ public class File implements Serializable {
         this.children = new ArrayList<>();
     }
 
+    // 以下是所有字段的getter和setter方法
+    // 每个方法的作用通过名称自解释，这里仅列出方法签名
 
     public String getPath() {
         return path;
@@ -59,7 +104,7 @@ public class File implements Serializable {
     }
 
     public void setDirectory(boolean directory) {
-        isDirectory = directory;
+        this.isDirectory = directory;
     }
 
     public long getLength() {
@@ -131,7 +176,7 @@ public class File implements Serializable {
     }
 
     public void setSymlink(boolean symlink) {
-        isSymlink = symlink;
+        this.isSymlink = symlink;
     }
 
     public boolean isHasAcl() {
@@ -147,7 +192,7 @@ public class File implements Serializable {
     }
 
     public void setEncrypted(boolean encrypted) {
-        isEncrypted = encrypted;
+        this.isEncrypted = encrypted;
     }
 
     public boolean isErasureCoded() {
@@ -155,7 +200,7 @@ public class File implements Serializable {
     }
 
     public void setErasureCoded(boolean erasureCoded) {
-        isErasureCoded = erasureCoded;
+        this.isErasureCoded = erasureCoded;
     }
 
     public List<File> getChildren() {
@@ -166,24 +211,37 @@ public class File implements Serializable {
         this.children = children;
     }
 
+    /**
+     * 将文件添加到文件树结构中
+     *
+     * @param file 要添加的文件对象
+     * @throws URISyntaxException 如果路径格式不正确
+     */
     public void addFile(File file) throws URISyntaxException {
+        // 将路径转换为URI并获取路径部分
         String path = new URI(file.path).getPath();
-
+        // 按"/"分割路径
         String[] parts = path.split("/");
         File current = this;
+
+        // 遍历路径的每个部分
         for (String part : parts) {
             if (!part.isEmpty()) {
+                // 在子节点中查找是否已存在该路径部分
                 File child = current.children.stream()
                         .filter(f -> f.getPath().equals(part))
                         .findFirst()
                         .orElse(null);
+                // 如果不存在则创建新节点
                 if (child == null) {
-                    child = new File(part, true, 0, 0, 0, 0, 0, "", "", "", false, false, false, false);
+                    child = new File(part, true, 0, 0, 0, 0, 0, "", "", "",
+                            false, false, false, false);
                     current.children.add(child);
                 }
                 current = child;
             }
         }
+        // 更新最终节点的属性
         current.isDirectory = file.isDirectory;
         current.length = file.length;
         current.replication = file.replication;
@@ -199,6 +257,11 @@ public class File implements Serializable {
         current.isErasureCoded = file.isErasureCoded;
     }
 
+    /**
+     * 返回文件对象的字符串表示形式
+     *
+     * @return 包含所有属性的字符串
+     */
     @Override
     public String toString() {
         return "File{" +
