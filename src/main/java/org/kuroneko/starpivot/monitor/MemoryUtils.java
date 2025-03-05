@@ -7,6 +7,7 @@ import java.math.RoundingMode;
  * 内存管理类，用于计算和获取已使用、剩余和总内存的信息。
  * 该类支持以字节（Bytes）、千字节（KB）和兆字节（MB）为单位的内存计算。
  */
+@Deprecated
 public class MemoryUtils {
 
     /**
