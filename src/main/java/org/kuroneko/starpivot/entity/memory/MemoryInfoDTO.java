@@ -1,8 +1,5 @@
 package org.kuroneko.starpivot.entity.memory;
 
-import org.kuroneko.starpivot.entity.memory.JVMMemory;
-import org.kuroneko.starpivot.entity.memory.SystemMemory;
-
 /**
  * MemoryInfoDTO 是一个用于封装 JVM 内存和系统内存信息的数据传输对象（DTO）。
  * 在项目中，它主要负责在不同层（如数据访问层、业务逻辑层、表示层）之间传输 JVM 和系统的内存使用情况数据，

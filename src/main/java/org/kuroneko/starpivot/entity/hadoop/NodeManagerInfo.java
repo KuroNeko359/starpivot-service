@@ -1,7 +1,6 @@
 package org.kuroneko.starpivot.entity.hadoop;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.omg.CORBA.PUBLIC_MEMBER;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package org.kuroneko.starpivot.entity.hadoop;
 
 import org.apache.hadoop.fs.BlockLocation;
-import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 
@@ -117,6 +117,7 @@ public class File implements Serializable {
      * @throws IOException 如果获取块位置或其他文件系统操作失败，则抛出此异常。
      * @throws URISyntaxException 如果 URL 解析失败，则抛出此异常。
      */
+    @Deprecated
     public File(FileSystemItem fileSystemItem) throws IOException, URISyntaxException {
         this(
                 fileSystemItem.getPath(),
@@ -131,6 +132,23 @@ public class File implements Serializable {
                 fileSystemItem.getGroup(),
                 new Path("/"), // TODO: 符号链接功能待完善
                 fileSystemItem.getBlockLocations()
+        );
+    }
+
+    public File(LocatedFileStatus fileStatus) throws URISyntaxException {
+        this(
+                fileStatus.getPath(),
+                fileStatus.getLen(),
+                fileStatus.isDirectory(),
+                fileStatus.getReplication(),
+                fileStatus.getBlockSize(),
+                fileStatus.getModificationTime(),
+                fileStatus.getAccessTime(),
+                fileStatus.getPermission(),
+                fileStatus.getOwner(),
+                fileStatus.getGroup(),
+                new Path("/"),// TODO: 符号链接功能待完善
+                fileStatus.getBlockLocations()
         );
     }
 

@@ -3,9 +3,7 @@ package org.kuroneko.starpivot.services;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.IOUtils;
-import org.kuroneko.starpivot.entity.file.FileDetail;
 import org.kuroneko.starpivot.entity.hadoop.File;
-import org.kuroneko.starpivot.entity.hadoop.FileSystemItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -96,19 +94,17 @@ public class HdfsClientService {
      * 删除HDFS中的文件。
      *
      * @param path 文件路径。
-     * @return 如果文件删除成功，则返回true，否则返回false。
-     * @throws IOException          如果发生I/O错误。
-     * @throws URISyntaxException   如果URI语法不正确。
-     * @throws InterruptedException 如果当前线程被中断。
+     * @throws IOException 如果发生I/O错误。
      */
-    public boolean deleteFile(String path)
-            throws IOException, URISyntaxException, InterruptedException {
+    public void deleteFile(String path)
+            throws IOException{
         FileStatus status = fs.getFileStatus(new Path(path));
         if (status.isFile()) {
-            return fs.delete(new Path(path), true);
+            fs.delete(new Path(path), true);
         }
-        return false;
     }
+
+
 
     /**
      * 在HDFS中创建文件。
@@ -116,14 +112,14 @@ public class HdfsClientService {
      * @return 如果文件创建成功，则返回true，否则返回false。
      * @throws IOException 如果发生I/O错误。
      */
-    public boolean createFile()
+    //TODO 未完成
+    public boolean createFile(Path pathInHdfs, String fileName)
             throws IOException {
-        Path filePath = new Path("/test.txt");
-        boolean isExist = fs.exists(filePath);
+        boolean isExist = fs.exists(pathInHdfs);
         if (isExist) {
             return false;
         }
-        fs.create(filePath, false);
+        fs.create(pathInHdfs, false);
         return true;
     }
 
@@ -134,10 +130,10 @@ public class HdfsClientService {
      * @return 如果文件内容更新成功，则返回true，否则返回false。
      * @throws IOException 如果发生I/O错误。
      */
-    public boolean updateFileContent(InputStream fileInputStream)
+    // TODO 未完成
+    public boolean updateFileContent(Path pathInHdfs, InputStream fileInputStream)
             throws IOException {
-        Path filePath = new Path("/test.txt");
-        FSDataOutputStream fsDataOutputStream = fs.create(filePath, true);
+        FSDataOutputStream fsDataOutputStream = fs.create(pathInHdfs, true);
         IOUtils.copyBytes(fileInputStream, fsDataOutputStream, configuration);
         return true;
     }
@@ -155,9 +151,8 @@ public class HdfsClientService {
         RemoteIterator<LocatedFileStatus> locatedFileStatusRemoteIterator = fs.listLocatedStatus(currentPath);
         List<File> files = new ArrayList<>();
         while (locatedFileStatusRemoteIterator.hasNext()) {
-            LocatedFileStatus next = locatedFileStatusRemoteIterator.next();
-            FileSystemItem fileSystemItem = new FileSystemItem(next);
-            files.add(new File(fileSystemItem));
+            LocatedFileStatus locatedFileStatus = locatedFileStatusRemoteIterator.next();
+            files.add(new File(locatedFileStatus));
         }
         return files;
     }
@@ -196,11 +191,24 @@ public class HdfsClientService {
         return fs;
     }
 
+
     /**
-     * 获取HDFS中文件的状态。
+     * 获取Hadoop文件的BlockLocations
+     *
+     * @param pathInHdfs 文件在Hadoop中的路径
+     * @return Hadoop文件的BlockLocation[]
+     */
+    public BlockLocation[] getBlockLocations(String pathInHdfs) throws IOException {
+        FileStatus status = getFileStatus(pathInHdfs);
+        return fs.getFileBlockLocations(status, 0, status.getLen());
+    }
+
+
+    /**
+     * 获取HDFS中文件的FileStatus。
      *
      * @param pathInHdfs HDFS中文件的路径。
-     * @return 文件状态。
+     * @return 文件状态(FileStatus)。
      * @throws IOException 如果发生I/O错误。
      */
     public FileStatus getFileStatus(String pathInHdfs)
@@ -208,6 +216,20 @@ public class HdfsClientService {
         Path path = getPath(pathInHdfs);
         return fs.getFileStatus(path);
     }
+
+    /**
+     * 获取HDFS中文件的LocatedFileStatus
+     *
+     * @param pathInHdfs HDFS中文件的路径。
+     * @return 文件的状态(LocatedFileStatus)。
+     * @throws IOException 如果发生I/O错误。
+     */
+    public LocatedFileStatus getLocatedFileStatus(String pathInHdfs)
+            throws IOException {
+
+        return new LocatedFileStatus(getFileStatus(pathInHdfs), getBlockLocations(pathInHdfs));
+    }
+
 
     /**
      * 将字符串路径转换为Hadoop Path对象。
@@ -221,6 +243,7 @@ public class HdfsClientService {
 
     /**
      * 获取文件的前32kb
+     *
      * @param pathInHdfs HDFS中文件的路径。
      * @return 文件前32kb String
      */
@@ -236,5 +259,16 @@ public class HdfsClientService {
         }
         return result;
     }
+
+    /**
+     * 获取文件信息
+     *
+     * @param pathInHdfs HDFS中的路径
+     */
+//    public String getFileInformation(String pathInHdfs) throws IOException {
+//        FileStatus status = getFileStatus(pathInHdfs);
+//        return new LocatedFileStatus()
+//    }
+
 
 }

@@ -1,6 +1,5 @@
 package org.kuroneko.starpivot.entity.hadoop;
 
-import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.LocatedFileStatus;
 
 import java.util.ArrayList;
@@ -10,11 +9,8 @@ import java.util.List;
  * 表示 Hadoop 文件系统中文件或目录的扩展实体类，继承自 {@link LocatedFileStatus}。
  * 该类在 Hadoop 原生文件状态的基础上增加了子文件或子目录的列表，用于表示文件系统的层次结构。
  * 适用于需要递归展示文件系统内容或构建文件树结构的场景。
- *
- * @author [Your Name]
- * @version 1.0
- * @since 2025-03-05
  */
+@Deprecated
 public class FileSystemItem extends LocatedFileStatus {
 
     /**

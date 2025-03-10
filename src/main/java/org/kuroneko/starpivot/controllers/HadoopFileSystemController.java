@@ -1,12 +1,10 @@
 package org.kuroneko.starpivot.controllers;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.kuroneko.starpivot.entity.file.FileDetail;
 import org.kuroneko.starpivot.entity.hadoop.File;
+import org.kuroneko.starpivot.entity.response.ErrorResponse;
+import org.kuroneko.starpivot.entity.response.SuccessResponse;
 import org.kuroneko.starpivot.services.HdfsClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
@@ -77,13 +75,17 @@ public class HadoopFileSystemController {
      * @throws InterruptedException 如果操作被中断
      */
     @PostMapping("/delete-directory")
-    public ResponseEntity<String> deleteDirectory(@RequestParam String path)
+    public ResponseEntity<?> deleteDirectory(@RequestParam String path)
             throws IOException, URISyntaxException, InterruptedException {
         boolean isDeleted = hdfsClientService.deleteDirectory(path);
         if (isDeleted) {
-            return new ResponseEntity<>("目录删除成功。", HttpStatus.OK);
+            return ResponseEntity
+                    .ok()
+                    .body(new SuccessResponse("目录删除成功。", HttpStatus.OK.value()));
         } else {
-            return new ResponseEntity<>("目录删除失败或不存在。", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new ErrorResponse("目录删除失败或不存在。", HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }
     }
 
@@ -92,18 +94,23 @@ public class HadoopFileSystemController {
      *
      * @param path 要删除的 HDFS 文件路径
      * @return 包含成功或错误消息和 HTTP 状态的 ResponseEntity
-     * @throws IOException          如果删除时发生 I/O 错误
-     * @throws URISyntaxException   如果提供的路径具有无效的 URI 语法
-     * @throws InterruptedException 如果操作被中断
+     * @throws IOException 如果删除时发生 I/O 错误
      */
     @PostMapping("/delete-file")
-    public ResponseEntity<String> deleteFile(@RequestParam String path)
-            throws IOException, URISyntaxException, InterruptedException {
-        boolean isDeleted = hdfsClientService.deleteFile(path);
-        if (isDeleted) {
-            return new ResponseEntity<>("文件删除成功。", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("文件删除失败或不存在。", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<?> deleteFile(@RequestParam String path) {
+        try {
+            hdfsClientService.deleteFile(path);
+            return ResponseEntity
+                    .ok()
+                    .body(new SuccessResponse("Delete success.", HttpStatus.OK.value()));
+        } catch (FileNotFoundException e) {
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new ErrorResponse("File not exist.", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        } catch (IOException e) {
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new ErrorResponse("Delete fail.", HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }
     }
 
@@ -112,20 +119,22 @@ public class HadoopFileSystemController {
      *
      * @param file 要上传的 MultipartFile 文件
      * @return 包含成功或错误消息和 HTTP 状态的 ResponseEntity
-     * @throws IOException          如果上传过程中发生 I/O 错误
-     * @throws URISyntaxException   如果路径具有无效的 URI 语法
-     * @throws InterruptedException 如果操作被中断
+     * @throws IOException 如果上传过程中发生 I/O 错误
      */
     @PostMapping("/upload-file")
-    public ResponseEntity<String> uploadFile(@RequestParam MultipartFile file)
-            throws IOException, URISyntaxException, InterruptedException {
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("path") String filePath)
+            throws IOException {
         logger.info("正在将文件上传到 HDFS");
-
-        boolean isCreate = hdfsClientService.createFile();
+        String fileName = file.getOriginalFilename();
+        if (fileName == null) {
+            return new ResponseEntity<>("文件名为空。", HttpStatus.BAD_REQUEST);
+        }
+        Path path = new Path(filePath, fileName);
+        boolean isCreate = hdfsClientService.createFile(path, fileName);
         if (!isCreate) {
             return new ResponseEntity<>("文件创建失败。", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        boolean isUpdate = hdfsClientService.updateFileContent(file.getInputStream());
+        boolean isUpdate = hdfsClientService.updateFileContent(path, file.getInputStream());
         if (!isUpdate) {
             return new ResponseEntity<>("文件写入失败。", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -141,6 +150,9 @@ public class HadoopFileSystemController {
      * @return 文件系统项的列表
      * @throws IOException 如果获取文件系统项时发生 I/O 错误
      */
+    //TODO 考虑将接口的请求方式改为GET
+    //TODO 修改接口返回的File类
+    //TODO 考虑改为返回ResponseEntity
     @PostMapping(value = "/files")
     public List<File> getFileSystemItem(@RequestBody Map<String, String> body)
             throws IOException, URISyntaxException {
@@ -187,10 +199,27 @@ public class HadoopFileSystemController {
      * @throws IOException 如果读取文件头部时发生 I/O 错误
      */
     @RequestMapping(value = "/file-head", method = RequestMethod.GET)
-    public ResponseEntity<FileDetail> getFileHead(@RequestParam("path") String pathInHdfs) throws IOException {
+    public ResponseEntity<FileDetail> getFileHead(@RequestParam("path") String pathInHdfs)
+            throws IOException {
         String fileHead = hdfsClientService.getFileHead(pathInHdfs);
         return ResponseEntity
                 .ok()
                 .body(new FileDetail(pathInHdfs, fileHead));
     }
+
+    /**
+     * 获取文件的BlockLocations
+     *
+     * @param pathInHdfs HDFS 中文件的路径
+     * @return 文件的BlockLocations
+     * @throws IOException 如果读取文件头部时发生 I/O 错误
+     */
+    @RequestMapping(value = "/get-block-locations", method = RequestMethod.GET)
+    public ResponseEntity<BlockLocation[]> getBlockLocations(@RequestParam("path") String pathInHdfs)
+            throws IOException {
+        return ResponseEntity
+                .ok()
+                .body(hdfsClientService.getBlockLocations(pathInHdfs));
+    }
+
 }
