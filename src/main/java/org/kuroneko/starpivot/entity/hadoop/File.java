@@ -7,8 +7,12 @@ import org.apache.hadoop.fs.permission.FsPermission;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Arrays;
 
 /**
  * 表示 Hadoop 文件系统中文件或目录的实体类。
@@ -88,7 +92,7 @@ public class File implements Serializable {
     public File(Path url, long length, Boolean isDir, short blockReplication,
                 long blockSize, long modificationTime, long accessTime,
                 FsPermission permission, String owner, String group,
-                Path symlink, BlockLocation[] locations) throws URISyntaxException {
+                Path symlink, BlockLocation[] locations) throws URISyntaxException, UnsupportedEncodingException {
         this.name = url.getName();
         this.url = url.toString();
         this.path = decodeURL(new URI(encodeURL(this.url)).getPath());
@@ -131,7 +135,7 @@ public class File implements Serializable {
         );
     }
 
-    public File(LocatedFileStatus fileStatus) throws URISyntaxException {
+    public File(LocatedFileStatus fileStatus) throws URISyntaxException, UnsupportedEncodingException {
         this(
                 fileStatus.getPath(),
                 fileStatus.getLen(),

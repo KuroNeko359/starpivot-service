@@ -24,6 +24,7 @@ public class HdfsClientService {
     private static final Logger log = LoggerFactory.getLogger(HdfsClientService.class);
 
     // Hadoop文件系统的URI
+    // TODO 开放给用户配置
     private final URI uri = new URI("hdfs://hadoop102:9000/");
 
     // Hadoop配置

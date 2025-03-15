@@ -81,11 +81,11 @@ public class HadoopFileSystemController {
         if (isDeleted) {
             return ResponseEntity
                     .ok()
-                    .body(new SuccessResponse("目录删除成功。", HttpStatus.OK.value()));
+                    .body(new SuccessResponse("目录删除成功。", HttpStatus.OK));
         } else {
             return ResponseEntity
                     .internalServerError()
-                    .body(new ErrorResponse("目录删除失败或不存在。", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+                    .body(new ErrorResponse("目录删除失败或不存在。", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -94,23 +94,26 @@ public class HadoopFileSystemController {
      *
      * @param path 要删除的 HDFS 文件路径
      * @return 包含成功或错误消息和 HTTP 状态的 ResponseEntity
-     * @throws IOException 如果删除时发生 I/O 错误
      */
     @PostMapping("/delete-file")
-    public ResponseEntity<?> deleteFile(@RequestParam String path) {
+    public ResponseEntity<?> deleteFile(@RequestParam("path") String path) {
         try {
             hdfsClientService.deleteFile(path);
-            return ResponseEntity
+            ResponseEntity<SuccessResponse> responseEntity = ResponseEntity
                     .ok()
-                    .body(new SuccessResponse("Delete success.", HttpStatus.OK.value()));
+                    .body(new SuccessResponse("Delete success.", HttpStatus.OK));
+            logger.info(String.valueOf(responseEntity));
+            return responseEntity;
         } catch (FileNotFoundException e) {
+            logger.error(e.getMessage());
             return ResponseEntity
                     .internalServerError()
-                    .body(new ErrorResponse("File not exist.", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+                    .body(new ErrorResponse("File not exist.", HttpStatus.INTERNAL_SERVER_ERROR));
         } catch (IOException e) {
+            logger.error(e.getMessage());
             return ResponseEntity
                     .internalServerError()
-                    .body(new ErrorResponse("Delete fail.", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+                    .body(new ErrorResponse("Delete fail.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -122,25 +125,31 @@ public class HadoopFileSystemController {
      * @throws IOException 如果上传过程中发生 I/O 错误
      */
     @PostMapping("/upload-file")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("path") String filePath)
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("path") String filePath)
             throws IOException {
         logger.info("正在将文件上传到 HDFS");
         String fileName = file.getOriginalFilename();
         if (fileName == null) {
-            return new ResponseEntity<>("文件名为空。", HttpStatus.BAD_REQUEST);
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ErrorResponse("File name is empty.", HttpStatus.BAD_REQUEST));
         }
         Path path = new Path(filePath, fileName);
         boolean isCreate = hdfsClientService.createFile(path, fileName);
         if (!isCreate) {
-            return new ResponseEntity<>("文件创建失败。", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new ErrorResponse("File creation failure.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
         boolean isUpdate = hdfsClientService.updateFileContent(path, file.getInputStream());
         if (!isUpdate) {
-            return new ResponseEntity<>("文件写入失败。", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.internalServerError()
+                    .body(new ErrorResponse("File write failure.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
         logger.info(file.getOriginalFilename());
-        return new ResponseEntity<>("文件上传成功。", HttpStatus.OK);
+        return ResponseEntity.ok()
+                .body(new SuccessResponse("文件上传成功。", HttpStatus.OK));
     }
 
     /**

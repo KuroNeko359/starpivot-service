@@ -1,4 +1,4 @@
-package org.kuroneko.starpivot.Test;
+package org.kuroneko.starpivot.test;
 
 import org.apache.hadoop.fs.Path;
 import org.junit.jupiter.api.Test;
