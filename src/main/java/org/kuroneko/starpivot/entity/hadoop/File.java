@@ -95,7 +95,7 @@ public class File implements Serializable {
                 Path symlink, BlockLocation[] locations) throws URISyntaxException {
         this.name = url.getName();
         this.url = url.toString();
-        this.path = new URI(this.url).getPath();
+        this.path = decodeURL(new URI(encodeURL(this.url)).getPath());
         this.length = length;
         this.isDir = isDir;
         this.blockReplication = blockReplication;
