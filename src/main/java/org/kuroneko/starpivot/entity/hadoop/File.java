@@ -15,10 +15,6 @@ import java.net.URISyntaxException;
  * 用于为前端返回序列化数据。
  * 该类封装了文件的基本属性（如路径、大小、权限等）以及与 Hadoop 文件系统相关的元数据（如块位置、复制因子等）。
  * 实现 {@link Serializable} 接口，支持对象的序列化和反序列化，适用于分布式系统中的数据传输或存储。
- *
- * @author [Your Name]
- * @version 1.0
- * @since 2025-03-05
  */
 public class File implements Serializable {
 
