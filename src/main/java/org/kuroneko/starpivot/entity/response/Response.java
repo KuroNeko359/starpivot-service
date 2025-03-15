@@ -1,5 +1,7 @@
 package org.kuroneko.starpivot.entity.response;
 
+import org.springframework.http.HttpStatus;
+
 public class Response {
     private String message;
     private int statusCode;
@@ -7,6 +9,11 @@ public class Response {
     public Response(String message, int statusCode) {
         this.message = message;
         this.statusCode = statusCode;
+    }
+
+    public Response(String message, HttpStatus status) {
+        this.message = message;
+        this.statusCode = status.value();
     }
 
     public String getMessage() {
