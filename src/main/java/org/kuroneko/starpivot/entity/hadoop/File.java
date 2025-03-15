@@ -403,4 +403,23 @@ public class File implements Serializable {
     public void setLocations(BlockLocation[] locations) {
         this.locations = locations;
     }
+
+    /**
+     * 为URL编码，防止出现非法字符
+     * @param url 待编码的URL
+     * @return  编码后的url
+     * @throws UnsupportedEncodingException 如果不支持编码 则抛出该异常
+     */
+    public String encodeURL(String url) throws UnsupportedEncodingException {
+        return URLEncoder.encode(url,"UTF-8");
+    }
+    /**
+     * 为URL解码
+     * @param url 待解码的URL
+     * @return  解码后的url
+     * @throws UnsupportedEncodingException 如果不支持编码 则抛出该异常
+     */
+    public String decodeURL(String url) throws UnsupportedEncodingException {
+        return URLDecoder.decode(url,"UTF-8");
+    }
 }
