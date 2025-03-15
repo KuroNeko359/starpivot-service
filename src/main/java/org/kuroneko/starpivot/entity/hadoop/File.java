@@ -418,4 +418,24 @@ public class File implements Serializable {
     public String decodeURL(String url) throws UnsupportedEncodingException {
         return URLDecoder.decode(url,"UTF-8");
     }
+
+    @Override
+    public String toString() {
+        return "File{" +
+                "name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", path='" + path + '\'' +
+                ", length=" + length +
+                ", isDir=" + isDir +
+                ", blockReplication=" + blockReplication +
+                ", blockSize=" + blockSize +
+                ", modificationTime=" + modificationTime +
+                ", accessTime=" + accessTime +
+                ", permission='" + permission + '\'' +
+                ", owner='" + owner + '\'' +
+                ", group='" + group + '\'' +
+                ", symlink=" + symlink +
+                ", locations=" + Arrays.toString(locations) +
+                '}';
+    }
 }
