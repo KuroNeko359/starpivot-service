@@ -3,25 +3,26 @@ package org.kuroneko.starpivot.entity.response;
 import org.springframework.http.HttpStatus;
 
 public class Response {
-    private String message;
+    private String data;
     private int statusCode;
 
-    public Response(String message, int statusCode) {
-        this.message = message;
+    public Response(String data, int statusCode) {
+        this.data = data;
         this.statusCode = statusCode;
     }
 
-    public Response(String message, HttpStatus status) {
-        this.message = message;
+    public Response(String data, HttpStatus status) {
+        this.data = data;
         this.statusCode = status.value();
     }
 
-    public String getMessage() {
-        return message;
+
+    public String getData() {
+        return data;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setData(String data) {
+        this.data = data;
     }
 
     public int getStatusCode() {
