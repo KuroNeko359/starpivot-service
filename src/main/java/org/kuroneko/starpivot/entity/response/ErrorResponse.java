@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public class ErrorResponse extends Response {
 
-    public ErrorResponse(String message, HttpStatus status) {
-        super(message, status);
+    public ErrorResponse(String data, HttpStatus status) {
+        super(data, status);
     }
 }
