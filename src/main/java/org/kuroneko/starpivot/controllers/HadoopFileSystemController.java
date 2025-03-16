@@ -147,7 +147,7 @@ public class HadoopFileSystemController {
                     .body(new ErrorResponse("File write failure.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
-        logger.info(file.getOriginalFilename());
+        logger.info("Update file {} to HDFS.",file.getOriginalFilename());
         return ResponseEntity.ok()
                 .body(new SuccessResponse("File upload success.", HttpStatus.OK));
     }
