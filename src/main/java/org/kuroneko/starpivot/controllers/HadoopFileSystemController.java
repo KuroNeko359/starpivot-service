@@ -149,7 +149,7 @@ public class HadoopFileSystemController {
 
         logger.info(file.getOriginalFilename());
         return ResponseEntity.ok()
-                .body(new SuccessResponse("文件上传成功。", HttpStatus.OK));
+                .body(new SuccessResponse("File upload success.", HttpStatus.OK));
     }
 
     /**
