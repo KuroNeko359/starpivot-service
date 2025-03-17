@@ -152,6 +152,24 @@ public class HadoopFileSystemController {
                 .body(new SuccessResponse("File upload success.", HttpStatus.OK));
     }
 
+    @PostMapping("/mkdir")
+    public ResponseEntity<?> mkdir(@RequestParam("path") String path) throws IOException {
+        boolean fileExist = hdfsClientService.isFileExist(path);
+        if (fileExist) {
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new ErrorResponse("Folder is already exist.", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+        boolean folder = hdfsClientService.createFolder(path);
+        if (!folder) {
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new ErrorResponse("Folder creation failure.", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+        return ResponseEntity.ok()
+                .body(new SuccessResponse("Folder is created.", HttpStatus.OK));
+    }
+
     /**
      * 获取指定路径下的文件系统项列表。
      *
