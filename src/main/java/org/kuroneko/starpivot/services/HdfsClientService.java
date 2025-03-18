@@ -92,6 +92,19 @@ public class HdfsClientService {
     }
 
     /**
+     * 检查HDFS中是否存在文件。
+     *
+     * @param path 文件路径。
+     * @return 如果文件存在，则返回true，否则返回false。
+     * @throws IOException 如果发生I/O错误。
+     */
+    public boolean isFileExist(Path path)
+            throws IOException {
+        return fs.exists(path);
+    }
+
+
+    /**
      * 删除HDFS中的文件。
      *
      * @param path 文件路径。
@@ -106,15 +119,13 @@ public class HdfsClientService {
     }
 
 
-
     /**
      * 在HDFS中创建文件。
      *
      * @return 如果文件创建成功，则返回true，否则返回false。
      * @throws IOException 如果发生I/O错误。
      */
-    //TODO 未完成
-    public boolean createFile(Path pathInHdfs, String fileName)
+    public boolean createFile(Path pathInHdfs)
             throws IOException {
         boolean isExist = fs.exists(pathInHdfs);
         if (isExist) {
@@ -122,6 +133,31 @@ public class HdfsClientService {
         }
         fs.create(pathInHdfs, false);
         return true;
+    }
+
+    /**
+     * 创建文件夹
+     * @param pathInHdfs 文件夹在HDFS中的路径
+     * @return 是否创建成功
+     * @throws IOException 如果发生IO异常
+     */
+    public boolean createFolder(Path pathInHdfs) throws IOException {
+        boolean isExist = fs.exists(pathInHdfs);
+        if (isExist) {
+            return false;
+        }
+        fs.mkdirs(pathInHdfs);
+        return true;
+    }
+
+    /**
+     * 创建文件夹
+     * @param pathInHdfs 文件夹在HDFS中的路径
+     * @return 是否创建成功
+     * @throws IOException 如果发生IO异常
+     */
+    public boolean createFolder(String pathInHdfs) throws IOException {
+        return createFolder(new Path(pathInHdfs));
     }
 
     /**

@@ -45,16 +45,18 @@ public class HadoopFileSystemController {
 
     /**
      * 在 HDFS 中指定路径创建新目录。
-     *
+     * 弃用 请使用mkdir接口
      * @param path 要创建目录的 HDFS 路径
      * @return 包含成功消息和 HTTP 状态的 ResponseEntity
      * @throws IOException          如果创建目录时发生 I/O 错误
      * @throws URISyntaxException   如果提供的路径具有无效的 URI 语法
      * @throws InterruptedException 如果操作被中断
      */
+    @Deprecated
     @PostMapping("/create-directory")
     public ResponseEntity<String> createDirectory(@RequestParam String path)
             throws IOException, URISyntaxException, InterruptedException {
+
         boolean isCreated = hdfsClientService.createDirectory(path);
         if (isCreated) {
             return new ResponseEntity<>("目录创建成功。", HttpStatus.CREATED);
@@ -77,15 +79,21 @@ public class HadoopFileSystemController {
     @PostMapping("/delete-directory")
     public ResponseEntity<?> deleteDirectory(@RequestParam String path)
             throws IOException, URISyntaxException, InterruptedException {
+        boolean isDirectoryExist = hdfsClientService.isFileExist(path);
+        if (!isDirectoryExist) {
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new ErrorResponse("Directory is not exist.", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
         boolean isDeleted = hdfsClientService.deleteDirectory(path);
         if (isDeleted) {
             return ResponseEntity
                     .ok()
-                    .body(new SuccessResponse("目录删除成功。", HttpStatus.OK));
+                    .body(new SuccessResponse("Directory deletion succeed.", HttpStatus.OK));
         } else {
             return ResponseEntity
                     .internalServerError()
-                    .body(new ErrorResponse("目录删除失败或不存在。", HttpStatus.INTERNAL_SERVER_ERROR));
+                    .body(new ErrorResponse("Directory deletion failure.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -127,27 +135,36 @@ public class HadoopFileSystemController {
     @PostMapping("/upload-file")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("path") String filePath)
             throws IOException {
-        logger.info("正在将文件上传到 HDFS");
+
         String fileName = file.getOriginalFilename();
         if (fileName == null) {
             return ResponseEntity
                     .badRequest()
                     .body(new ErrorResponse("File name is empty.", HttpStatus.BAD_REQUEST));
         }
+
         Path path = new Path(filePath, fileName);
-        boolean isCreate = hdfsClientService.createFile(path, fileName);
+        if (hdfsClientService.isFileExist(path)) {
+            logger.error("Upload a file {} but file is already exist.",path);
+            return ResponseEntity
+                    .internalServerError()
+                    .body(new ErrorResponse("File is already exist.", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+        boolean isCreate = hdfsClientService.createFile(path);
         if (!isCreate) {
+            logger.error("Upload a file {} but file is creation failure.",path);
             return ResponseEntity
                     .internalServerError()
                     .body(new ErrorResponse("File creation failure.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
         boolean isUpdate = hdfsClientService.updateFileContent(path, file.getInputStream());
         if (!isUpdate) {
+            logger.error("Upload a file {} but file is write failure.",path);
             return ResponseEntity.internalServerError()
                     .body(new ErrorResponse("File write failure.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
-        logger.info("Update file {} to HDFS.",file.getOriginalFilename());
+        logger.info("Upload file {} to HDFS.",file.getOriginalFilename());
         return ResponseEntity.ok()
                 .body(new SuccessResponse("File upload success.", HttpStatus.OK));
     }
