@@ -57,6 +57,10 @@ public class HadoopNativeService {
      * @param name 名字 值格式为NameNodeInfo::ClusterId
      */
     public String getJmx(String qry, String get, String name) {
+        if (qry != null) {
+            qry = qry.replace("%3D","=");
+            qry = qry.replace("%3d","=");
+        }
         StringJoiner paramJoiner = new StringJoiner(",");
         if (qry != null) {
             paramJoiner.add("qry=" + qry);
@@ -73,7 +77,7 @@ public class HadoopNativeService {
         } else {
             param = "jmx?" + paramJoiner;
         }
-        String url = new Path(hadoopUrl, param).toUri().toString();
+        String url = hadoopUrl + param;
         logger.info("GetJMX: {}", url);
         return restTemplate.getForObject(url, String.class);
     }

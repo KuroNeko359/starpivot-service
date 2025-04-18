@@ -23,6 +23,10 @@ import java.util.List;
 public class HdfsClientService {
     private static final Logger log = LoggerFactory.getLogger(HdfsClientService.class);
 
+    public enum UpdateMode {
+        APPEND,
+        OVERWRITE,
+    }
     // Hadoop文件系统的URI
     // TODO 开放给用户配置
     private final URI uri = new URI("hdfs://hadoop102:9000/");
@@ -163,16 +167,36 @@ public class HdfsClientService {
     /**
      * 更新HDFS中文件的内容。
      *
+     * @param pathInHdfs 文件再HDFS中的路径
      * @param fileInputStream 文件内容的输入流。
-     * @return 如果文件内容更新成功，则返回true，否则返回false。
-     * @throws IOException 如果发生I/O错误。
+     * @param mode 文件上传的模式
+     *             APPEND为往文件后追加内容
+     *             OVERWRITE为覆盖原有的文件为新文件
+     *
      */
-    // TODO 未完成
-    public boolean updateFileContent(Path pathInHdfs, InputStream fileInputStream)
-            throws IOException {
-        FSDataOutputStream fsDataOutputStream = fs.create(pathInHdfs, true);
-        IOUtils.copyBytes(fileInputStream, fsDataOutputStream, configuration);
-        return true;
+    public void updateFileContent(Path pathInHdfs, InputStream fileInputStream, UpdateMode mode) {
+        FSDataOutputStream fsDataOutputStream = null;
+        try {
+            switch (mode) {
+                case APPEND: {
+                    fsDataOutputStream = fs.append(pathInHdfs);
+                    break;
+                }
+                case OVERWRITE: {
+                    fsDataOutputStream = fs.create(pathInHdfs, true);
+                    break;
+                }
+            }
+
+            if (fsDataOutputStream != null) {
+                IOUtils.copyBytes(fileInputStream, fsDataOutputStream, configuration);
+            }
+        }catch (IOException e) {
+            log.error(e.getMessage());
+        }finally {
+            IOUtils.closeStream(fsDataOutputStream);
+        }
+
     }
 
     /**
@@ -269,13 +293,20 @@ public class HdfsClientService {
 
 
     /**
-     * 将字符串路径转换为Hadoop Path对象。
+     * 将字符串路径转换为Hadoop Path对象，处理路径中的特殊字符。
      *
      * @param pathInHdfs HDFS中文件的路径。
      * @return Hadoop Path对象。
+     * @throws IllegalArgumentException 如果路径不合法。
      */
     public Path getPath(String pathInHdfs) {
-        return new Path(uri.resolve(pathInHdfs));
+        try {
+            URI pathUri = new URI(null, null, pathInHdfs, null);
+            URI resolvedUri = uri.resolve(pathUri);
+            return new Path(resolvedUri.getPath());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid path: " + pathInHdfs, e);
+        }
     }
 
     /**

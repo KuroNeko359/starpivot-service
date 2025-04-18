@@ -159,13 +159,20 @@ public class HdfsClientServiceTest {
     }
 
     /**
-     * 将字符串路径转换为Hadoop Path对象。
+     * 将字符串路径转换为Hadoop Path对象，处理路径中的特殊字符。
      *
      * @param pathInHdfs HDFS中文件的路径。
      * @return Hadoop Path对象。
+     * @throws IllegalArgumentException 如果路径不合法。
      */
     public Path getPath(String pathInHdfs) {
-        return new Path(uri.resolve(pathInHdfs));
+        try {
+            URI pathUri = new URI(null, null, pathInHdfs, null);
+            URI resolvedUri = uri.resolve(pathUri);
+            return new Path(resolvedUri.getPath());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid path: " + pathInHdfs, e);
+        }
     }
 
 
@@ -187,6 +194,12 @@ public class HdfsClientServiceTest {
         String fileHead = getFileHead("hdfs://hadoop102:9000/hadoop/LICENSE.txt");
         System.out.println(fileHead);
 
+    }
+
+    @Test
+    public void getPathTest() throws IOException {
+        Path path = getPath("/hado op/LICENSE.txt");
+        log.info("path:{}", path);
     }
 
 }

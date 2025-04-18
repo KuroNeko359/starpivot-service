@@ -1,6 +1,7 @@
 package org.kuroneko.starpivot.controllers;
 
 import org.apache.hadoop.fs.*;
+import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
 import org.kuroneko.starpivot.entity.file.FileDetail;
 import org.kuroneko.starpivot.entity.hadoop.File;
 import org.kuroneko.starpivot.entity.response.ErrorResponse;
@@ -133,40 +134,40 @@ public class HadoopFileSystemController {
      * @throws IOException 如果上传过程中发生 I/O 错误
      */
     @PostMapping("/upload-file")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("path") String filePath)
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,
+                                        @RequestParam("path") String filePath,
+                                        @RequestParam("fileName") String fileName)
             throws IOException {
-
-        String fileName = file.getOriginalFilename();
+        logger.info("Uploading file: {}", fileName);
         if (fileName == null) {
+            logger.error("File name is null");
             return ResponseEntity
                     .badRequest()
                     .body(new ErrorResponse("File name is empty.", HttpStatus.BAD_REQUEST));
         }
-
+        logger.info("Updating a file chunks that size is {}", file.getSize());
         Path path = new Path(filePath, fileName);
         if (hdfsClientService.isFileExist(path)) {
-            logger.error("Upload a file {} but file is already exist.",path);
-            return ResponseEntity
-                    .internalServerError()
-                    .body(new ErrorResponse("File is already exist.", HttpStatus.INTERNAL_SERVER_ERROR));
-        }
-        boolean isCreate = hdfsClientService.createFile(path);
-        if (!isCreate) {
-            logger.error("Upload a file {} but file is creation failure.",path);
-            return ResponseEntity
-                    .internalServerError()
-                    .body(new ErrorResponse("File creation failure.", HttpStatus.INTERNAL_SERVER_ERROR));
-        }
-        boolean isUpdate = hdfsClientService.updateFileContent(path, file.getInputStream());
-        if (!isUpdate) {
-            logger.error("Upload a file {} but file is write failure.",path);
-            return ResponseEntity.internalServerError()
-                    .body(new ErrorResponse("File write failure.", HttpStatus.INTERNAL_SERVER_ERROR));
+            hdfsClientService.updateFileContent(path, file.getInputStream(), HdfsClientService.UpdateMode.APPEND);
+            logger.info("File {} has been updated.", fileName);
+            return ResponseEntity.ok()
+                    .body(new SuccessResponse("File update success.", HttpStatus.OK));
+        }else {
+            hdfsClientService.updateFileContent(path,file.getInputStream(), HdfsClientService.UpdateMode.OVERWRITE);
+            logger.info("File {} has been uploaded.",fileName);
+            return ResponseEntity.ok()
+                    .body(new SuccessResponse("File upload success.", HttpStatus.OK));
         }
 
-        logger.info("Upload file {} to HDFS.",file.getOriginalFilename());
-        return ResponseEntity.ok()
-                .body(new SuccessResponse("File upload success.", HttpStatus.OK));
+    }
+
+    @GetMapping("/file-exist")
+    public ResponseEntity<?> fileExist(@RequestParam("path") String path) throws IOException {
+        if (hdfsClientService.isFileExist(path)) {
+            return ResponseEntity.ok().body(new SuccessResponse("File exist.", HttpStatus.OK));
+        }else {
+            return ResponseEntity.ok().body(new SuccessResponse("File does not exist.", HttpStatus.NOT_FOUND));
+        }
     }
 
     @PostMapping("/mkdir")
