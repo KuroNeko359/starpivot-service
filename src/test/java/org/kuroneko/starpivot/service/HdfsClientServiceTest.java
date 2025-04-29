@@ -155,6 +155,7 @@ public class HdfsClientServiceTest {
     public FSDataInputStream getFSDataInputStream(String pathInHdfs)
             throws IOException {
         Path path = getPath(pathInHdfs);
+
         return fs.open(path);
     }
 

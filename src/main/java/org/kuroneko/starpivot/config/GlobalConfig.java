@@ -7,6 +7,15 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "app.global")
 public class GlobalConfig {
     private String hadoopUrl;
+    private String starpivotHome;
+
+    public String getStarpivotHome() {
+        return starpivotHome;
+    }
+
+    public void setStarpivotHome(String starpivotHome) {
+        this.starpivotHome = starpivotHome;
+    }
 
     public String getHadoopUrl() {
         return hadoopUrl;

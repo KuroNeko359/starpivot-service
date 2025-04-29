@@ -176,6 +176,7 @@ public class HdfsClientService {
      */
     public void updateFileContent(Path pathInHdfs, InputStream fileInputStream, UpdateMode mode) {
         FSDataOutputStream fsDataOutputStream = null;
+
         try {
             switch (mode) {
                 case APPEND: {
