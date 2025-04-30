@@ -8,6 +8,10 @@ import org.springframework.context.annotation.Configuration;
 public class GlobalConfig {
     private String hadoopUrl;
     private String starpivotHome;
+    private String coreSiteUrl;
+    private String hdfsSiteUrl;
+    private String yarnSiteUrl;
+    private String mapredSiteUrl;
 
     public String getStarpivotHome() {
         return starpivotHome;
@@ -23,5 +27,37 @@ public class GlobalConfig {
 
     public void setHadoopUrl(String hadoopUrl) {
         this.hadoopUrl = hadoopUrl;
+    }
+
+    public String getCoreSiteUrl() {
+        return coreSiteUrl;
+    }
+
+    public void setCoreSiteUrl(String coreSiteUrl) {
+        this.coreSiteUrl = coreSiteUrl;
+    }
+
+    public String getHdfsSiteUrl() {
+        return hdfsSiteUrl;
+    }
+
+    public void setHdfsSiteUrl(String hdfsSiteUrl) {
+        this.hdfsSiteUrl = hdfsSiteUrl;
+    }
+
+    public String getYarnSiteUrl() {
+        return yarnSiteUrl;
+    }
+
+    public void setYarnSiteUrl(String yarnSiteUrl) {
+        this.yarnSiteUrl = yarnSiteUrl;
+    }
+
+    public String getMapredSiteUrl() {
+        return mapredSiteUrl;
+    }
+
+    public void setMapredSiteUrl(String mapredSiteUrl) {
+        this.mapredSiteUrl = mapredSiteUrl;
     }
 }

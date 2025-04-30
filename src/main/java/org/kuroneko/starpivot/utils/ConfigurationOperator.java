@@ -1,5 +1,6 @@
 package org.kuroneko.starpivot.utils;
 
+import org.apache.hadoop.yarn.webapp.NotFoundException;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -25,7 +26,7 @@ import java.util.List;
  *
  * @author KuroNeko359
  */
-public class PropertiesOperator {
+public class ConfigurationOperator {
     SAXReader reader;
     Document doc;
     String xmlUrl = null;
@@ -38,7 +39,7 @@ public class PropertiesOperator {
      * @throws DocumentException        当文件读取失败或 XML 格式错误时抛出
      * @throws IllegalArgumentException 当文件路径为空或文件不存在时抛出
      */
-    public PropertiesOperator(String xmlUrl) throws DocumentException {
+    public ConfigurationOperator(String xmlUrl) throws DocumentException {
         this.xmlUrl = xmlUrl;
         this.reader = new SAXReader();
         this.doc = reader.read(new File(xmlUrl));
@@ -59,7 +60,7 @@ public class PropertiesOperator {
      *
      * @return 属性节点列表（可能为空列表）
      */
-    private List<Element> getProperties() {
+    public List<Element> getProperties() {
         return root.elements("property");
     }
 
@@ -70,7 +71,7 @@ public class PropertiesOperator {
      * @param value       属性值（非空时创建 value 子节点）
      * @param description 属性说明（非空时创建 description 子节点）
      */
-    private void addProperty(String name, String value, String description) {
+    public void addProperty(String name, String value, String description) {
         Element element = root.addElement("property");
         if (name != null) {
             element.addElement("name").setText(name);
@@ -89,7 +90,7 @@ public class PropertiesOperator {
      * @param name  属性名称（非空时创建 name 子节点）
      * @param value 属性值（非空时创建 value 子节点）
      */
-    private void addProperty(String name, String value) {
+    public void addProperty(String name, String value) {
         addProperty(name, value, null);
     }
 
@@ -101,15 +102,9 @@ public class PropertiesOperator {
      * @param name 要删除的属性名称（不允许为空）
      * @throws NullPointerException 当 name 参数为 null 时抛出
      */
-    private void removeProperty(String name) {
-        List<Element> properties = root.elements("property");
-        for (Element property : properties) {
-            Element nameElem = property.element("name");
-            if (nameElem.getText().equals(name)) {
-                root.remove(property);
-                break;
-            }
-        }
+    public void removeProperty(String name) {
+        Element property = findProperty(name);
+        root.remove(property);
     }
 
     /**
@@ -121,11 +116,30 @@ public class PropertiesOperator {
      * @throws IOException           当文件写入失败时抛出
      * @throws IllegalStateException 当文件路径未初始化时抛出
      */
-    private void saveToFile() throws IOException {
+    public void saveToFile()
+            throws IOException {
         OutputFormat format = OutputFormat.createPrettyPrint();
         XMLWriter writer = new XMLWriter(new FileWriter(xmlUrl), format);
         writer.write(doc);
         writer.close();
+    }
+
+    /**
+     * 根据名称找到Property
+     *
+     * @param name property的名称
+     * @return property的Element
+     * @exception NotFoundException 如果没有根据名字找到节点 那么抛出这个异常
+     */
+    public Element findProperty(String name) {
+        List<Element> properties = root.elements("property");
+        for (Element property : properties) {
+            Element nameElem = property.element("name");
+            if (nameElem.getText().equals(name)) {
+                return property;
+            }
+        }
+        throw new NotFoundException("Property not found");
     }
 }
 
